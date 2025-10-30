@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: embeding-data-cm
+data:
+  KAFKA_BOOTSTRAP: "localhost:9092"
+  KAFKA_TOPIC: "citizen-data"
+  KAFKA_GROUP: "embedding-workers1"
+  BATCH_SIZE: "10000"
+  MILVUS_URL: "http://localhost:19530"
+  MILVUS_DB_NAME: "default"
+  MILVUS_COLLECTION_NAME: "test1"
+  LOCAL_MODEL_PATH_M3: "bge-m3" 
+  PORT_RUNNING: "8000"
+
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embeding-data-milvus
+  labels:
+    app: embeding-data-milvus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: embeding-data-milvus
+  template:
+    metadata:
+      labels:
+        app: embeding-data-milvus
+    spec:
+      containers:
+      - name: embeding-data-milvus
+        image: 19133046/kafka_milvus:v2
+        imagePullPolicy: Always  
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+        env:
+        - name: KAFKA_BOOTSTRAP
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: KAFKA_BOOTSTRAP 
+        - name: KAFKA_TOPIC
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: KAFKA_TOPIC
+        - name: KAFKA_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: KAFKA_GROUP
+        - name: BATCH_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: BATCH_SIZE
+        - name: MILVUS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: MILVUS_URL
+        - name: MILVUS_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: MILVUS_DB_NAME
+        - name: MILVUS_COLLECTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: MILVUS_COLLECTION_NAME
+        - name: LOCAL_MODEL_PATH_M3
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: LOCAL_MODEL_PATH_M3
+        - name: SERVICE
+          value: "consumer"
+
+--- 
+
+
+

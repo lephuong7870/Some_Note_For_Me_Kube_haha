@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: text-to-embeding
+  labels:
+    app: text-to-embeding
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: text-to-embeding
+  template:
+    metadata:
+      labels:
+        app: text-to-embeding
+    spec:
+      containers:
+      - name: text-to-embeding
+        image: 19133046/kafka_milvus:v2
+        imagePullPolicy: Always  
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+        env:
+        - name: PORT_RUNNING
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: PORT_RUNNING
+        - name: LOCAL_MODEL_PATH_M3
+          valueFrom:
+            configMapKeyRef:
+              name: embeding-data-cm
+              key: LOCAL_MODEL_PATH_M3
+        - name: SERVICE
+          value: "api-convert-embeding"
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: text-to-embeding
+  labels:
+    app: text-to-embeding
+spec:
+  selector:
+    app: text-to-embeding
+  ports:
+    - protocol: TCP
+      port: 8000       
+      targetPort: 8000 
+  type: ClusterIP    
+
+
